@@ -39,6 +39,7 @@ import software.amazon.awssdk.codegen.poet.client.specs.Ec2ProtocolSpec;
 import software.amazon.awssdk.codegen.poet.client.specs.JsonProtocolSpec;
 import software.amazon.awssdk.codegen.poet.client.specs.ProtocolSpec;
 import software.amazon.awssdk.codegen.poet.client.specs.QueryXmlProtocolSpec;
+import software.amazon.awssdk.codegen.utils.PaginatorUtils;
 import software.amazon.awssdk.core.auth.presign.PresignerParams;
 import software.amazon.awssdk.core.client.ClientHandler;
 import software.amazon.awssdk.core.config.AdvancedClientOption;
@@ -138,13 +139,29 @@ public class SyncClientClass implements ClassSpec {
         List<MethodSpec> methods = new ArrayList<>();
         ClassName returnType = poetExtensions.getModelClass(opModel.getReturnType().getReturnType());
 
-        methods.add(SyncClientInterface.operationMethodSignature(model, opModel)
+        methods.add(SyncClientInterface.operationMethodSignature(model, opModel, opModel.getMethodName())
                                   .addAnnotation(Override.class)
                                   .addCode(getCustomResponseHandler(opModel, returnType)
                                                .orElseGet(() -> protocolSpec.responseHandler(opModel)))
                                   .addCode(protocolSpec.errorResponseHandler(opModel))
                                   .addCode(protocolSpec.executionHandler(opModel))
                                   .build());
+
+        // Add extra methods for paginated operations
+        if (opModel.isPaginated()) {
+            methods.add(SyncClientInterface.operationMethodSignature(model, opModel,
+                                                                     PaginatorUtils.getSyncMethodName(opModel.getMethodName()))
+                    .addAnnotation(Override.class)
+                    .returns(poetExtensions.getResponseClassForPaginatedSyncOperation(opModel.getOperationName()))
+                    .addCode("\n")
+                    .addStatement("$T firstPage = $L($L)", returnType, opModel.getMethodName(),
+                                  opModel.getInput().getVariableName())
+                    .addCode("\n")
+                    .addStatement("return new $T(this, $L, firstPage)",
+                            poetExtensions.getResponseClassForPaginatedSyncOperation(opModel.getOperationName()),
+                            opModel.getInput().getVariableName())
+                    .build());
+        }
 
         return methods;
     }

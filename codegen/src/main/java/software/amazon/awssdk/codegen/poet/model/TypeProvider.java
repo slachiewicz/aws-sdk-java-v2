@@ -131,6 +131,13 @@ class TypeProvider {
         return ParameterizedTypeName.get(ClassName.get(Map.Entry.class), keyType, valueType);
     }
 
+    public TypeName mapEntryWithConcreteTypes(MapModel mapModel) {
+        TypeName keyType = fieldType(mapModel.getKeyModel());
+        TypeName valueType = fieldType(mapModel.getValueModel());
+
+        return ParameterizedTypeName.get(ClassName.get(Map.Entry.class), keyType, valueType);
+    }
+
     public TypeName getTypeNameForSimpleType(String simpleType) {
         return Stream.of(String.class,
                 Boolean.class,
