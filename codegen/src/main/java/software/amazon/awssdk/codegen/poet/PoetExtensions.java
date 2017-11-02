@@ -67,9 +67,11 @@ public class PoetExtensions {
      *
      * Example: If operationName is "ListTables", then the response type of the paginated operation
      * will be "ListTablesPaginator" class in the base service package.
+     *
+     * TODO Finalize the class naming
      */
     public ClassName getResponseClassForPaginatedSyncOperation(String operationName) {
-        return ClassName.get(model.getMetadata().getFullModelPackageName(), operationName + "Paginator");
+        return ClassName.get(model.getMetadata().getFullPaginatorsPackageName(), operationName + "Paginator");
     }
 
 }

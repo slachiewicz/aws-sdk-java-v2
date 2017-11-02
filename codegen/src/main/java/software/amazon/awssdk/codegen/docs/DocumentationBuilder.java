@@ -53,6 +53,28 @@ public final class DocumentationBuilder {
     }
 
     /**
+     * Prepend text to existing javadoc comment.
+     *
+     * @param additionalDocs Text that needs to be prepended
+     * @return This builder for method chaining.
+     */
+    public DocumentationBuilder prependDescription(String additionalDocs) {
+        this.desc = additionalDocs + this.desc;
+        return this;
+    }
+
+    /**
+     * Append text to existing javadoc comment.
+     *
+     * @param additionalDocs Text that needs to be appended
+     * @return This builder for method chaining.
+     */
+    public DocumentationBuilder appendDescription(String additionalDocs) {
+        this.desc += additionalDocs;
+        return this;
+    }
+
+    /**
      * Adds a new param to the Javadoc.
      *
      * @param paramName Name of parameter.

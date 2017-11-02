@@ -23,7 +23,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import software.amazon.awssdk.pagination.SdkIterable;
+import software.amazon.awssdk.core.pagination.SdkIterable;
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest;
@@ -33,9 +33,9 @@ import software.amazon.awssdk.services.dynamodb.model.KeyType;
 import software.amazon.awssdk.services.dynamodb.model.ProvisionedThroughput;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
-import software.amazon.awssdk.services.dynamodb.model.ScanPaginator;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 import software.amazon.awssdk.services.dynamodb.model.ScanResponse;
+import software.amazon.awssdk.services.dynamodb.paginators.ScanPaginator;
 import utils.resources.tables.BasicTempTable;
 import utils.test.util.DynamoDBTestBase;
 import utils.test.util.TableUtils;
@@ -66,10 +66,6 @@ public class ScanPaginatorIntegrationTest extends DynamoDBTestBase {
                                              .build());
 
         TableUtils.waitUntilActive(dynamo, TABLE_NAME);
-//        new DynamoDBClientWaiters(dynamo)
-//              .tableExists()
-//              .run(new WaiterParameters<DescribeTableRequest>().withRequest(
-//                  DescribeTableRequest.builder().tableName(TABLE_NAME).build()));
 
         putTestData();
     }
@@ -101,9 +97,9 @@ public class ScanPaginatorIntegrationTest extends DynamoDBTestBase {
     }
 
     @Test
-    public void test_MultipleIteration_On_AllItems_Iterable() {
+    public void test_MultipleIteration_On_PaginatedMember_Iterable() {
         ScanRequest request = ScanRequest.builder().tableName(TABLE_NAME).limit(2).build();
-        SdkIterable<Map<String, AttributeValue>> items = dynamo.scanIterable(request).allItems();
+        SdkIterable<Map<String, AttributeValue>> items = dynamo.scanIterable(request).items();
 
         int count = 0;
 
@@ -142,10 +138,10 @@ public class ScanPaginatorIntegrationTest extends DynamoDBTestBase {
     }
 
     @Test
-    public void test_MultipleIteration_On_AllItems_Stream() {
+    public void test_MultipleIteration_On_PaginatedMember_Stream() {
         int results_per_page = 2;
         ScanRequest request = ScanRequest.builder().tableName(TABLE_NAME).limit(results_per_page).build();
-        SdkIterable<Map<String, AttributeValue>> items = dynamo.scanIterable(request).allItems();
+        SdkIterable<Map<String, AttributeValue>> items = dynamo.scanIterable(request).items();
 
         // Iterate once
         Assert.assertEquals(ITEM_COUNT, items.stream().distinct().count());
@@ -158,7 +154,7 @@ public class ScanPaginatorIntegrationTest extends DynamoDBTestBase {
     public void iteration_On_SameStream_ThrowsError() {
         int results_per_page = 2;
         ScanRequest request = ScanRequest.builder().tableName(TABLE_NAME).limit(results_per_page).build();
-        Stream<Map<String, AttributeValue>> itemsStream = dynamo.scanIterable(request).allItems().stream();
+        Stream<Map<String, AttributeValue>> itemsStream = dynamo.scanIterable(request).items().stream();
 
         // Iterate once
         Assert.assertEquals(ITEM_COUNT, itemsStream.distinct().count());

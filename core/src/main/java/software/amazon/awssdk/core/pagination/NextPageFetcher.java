@@ -13,17 +13,27 @@
  * permissions and limitations under the License.
  */
 
-package software.amazon.awssdk.pagination;
+package software.amazon.awssdk.core.pagination;
 
-@FunctionalInterface
-public interface NextPageSupplier<ResponseT> {
+import software.amazon.awssdk.annotations.SdkInternalApi;
+
+@SdkInternalApi
+public interface NextPageFetcher<ResponseT> {
 
     /**
-     * Method that uses the information in #currentPage and returns the
+     * Returns a boolean value indicating if a next page is available.
+     *
+     * @param oldPage last page sent by service in a paginated operation
+     * @return True if there is a next page available. Otherwise false.
+     */
+    boolean hasNextPage(ResponseT oldPage);
+
+    /**
+     * Method that uses the information in #oldPage and returns the
      * next page if available by making a service call.
      *
-     * @param currentPage current response page in a paginated operation
+     * @param oldPage last page sent by service in a paginated operation
      * @return the next page if available. Otherwise returns null.
      */
-    ResponseT nextPage(ResponseT currentPage);
+    ResponseT nextPage(ResponseT oldPage);
 }

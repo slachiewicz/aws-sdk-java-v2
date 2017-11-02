@@ -11,6 +11,10 @@ import software.amazon.awssdk.services.json.model.APostOperationWithOutputReques
 import software.amazon.awssdk.services.json.model.APostOperationWithOutputResponse;
 import software.amazon.awssdk.services.json.model.GetWithoutRequiredMembersRequest;
 import software.amazon.awssdk.services.json.model.GetWithoutRequiredMembersResponse;
+import software.amazon.awssdk.services.json.model.PaginatedOperationWithResultKeyRequest;
+import software.amazon.awssdk.services.json.model.PaginatedOperationWithResultKeyResponse;
+import software.amazon.awssdk.services.json.model.PaginatedOperationWithoutResultKeyRequest;
+import software.amazon.awssdk.services.json.model.PaginatedOperationWithoutResultKeyResponse;
 import software.amazon.awssdk.services.json.model.StreamingInputOperationRequest;
 import software.amazon.awssdk.services.json.model.StreamingInputOperationResponse;
 import software.amazon.awssdk.services.json.model.StreamingOutputOperationRequest;
@@ -27,8 +31,8 @@ import software.amazon.awssdk.utils.SdkAutoCloseable;
 public interface JsonAsyncClient extends SdkAutoCloseable {
     /**
      * Create a {@link JsonAsyncClient} with the region loaded from the
-     * {@link software.amazon.awssdk.core.regions.providers.DefaultAwsRegionProviderChain} and credentials loaded from the
-     * {@link software.amazon.awssdk.core.auth.DefaultCredentialsProvider}.
+     * {@link software.amazon.awssdk.core.regions.providers.DefaultAwsRegionProviderChain} and credentials loaded from
+     * the {@link software.amazon.awssdk.core.auth.DefaultCredentialsProvider}.
      */
     static JsonAsyncClient create() {
         return builder().build();
@@ -92,7 +96,7 @@ public interface JsonAsyncClient extends SdkAutoCloseable {
      *      target="_top">AWS API Documentation</a>
      */
     default CompletableFuture<APostOperationWithOutputResponse> aPostOperationWithOutput(
-            APostOperationWithOutputRequest aPostOperationWithOutputRequest) {
+        APostOperationWithOutputRequest aPostOperationWithOutputRequest) {
         throw new UnsupportedOperationException();
     }
 
@@ -120,7 +124,57 @@ public interface JsonAsyncClient extends SdkAutoCloseable {
      *      target="_top">AWS API Documentation</a>
      */
     default CompletableFuture<GetWithoutRequiredMembersResponse> getWithoutRequiredMembers(
-            GetWithoutRequiredMembersRequest getWithoutRequiredMembersRequest) {
+        GetWithoutRequiredMembersRequest getWithoutRequiredMembersRequest) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Some paginated operation with result_key in paginators.json file
+     *
+     * @param paginatedOperationWithResultKeyRequest
+     * @return A Java Future containing the result of the PaginatedOperationWithResultKey operation returned by the
+     *         service.<br/>
+     *         The CompletableFuture returned by this method can be completed exceptionally with the following
+     *         exceptions.
+     *         <ul>
+     *         <li>SdkBaseException Base class for all exceptions that can be thrown by the SDK (both service and
+     *         client). Can be used for catch all scenarios.</li>
+     *         <li>SdkClientException If any client side error occurs such as an IO related failure, failure to get
+     *         credentials, etc.</li>
+     *         <li>JsonException Base class for all service exceptions. Unknown exceptions will be thrown as an instance
+     *         of this type.</li>
+     *         </ul>
+     * @sample JsonAsyncClient.PaginatedOperationWithResultKey
+     * @see <a href="http://docs.aws.amazon.com/goto/WebAPI/json-service-2010-05-08/PaginatedOperationWithResultKey"
+     *      target="_top">AWS API Documentation</a>
+     */
+    default CompletableFuture<PaginatedOperationWithResultKeyResponse> paginatedOperationWithResultKey(
+        PaginatedOperationWithResultKeyRequest paginatedOperationWithResultKeyRequest) {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Some paginated operation without result_key in paginators.json file
+     *
+     * @param paginatedOperationWithoutResultKeyRequest
+     * @return A Java Future containing the result of the PaginatedOperationWithoutResultKey operation returned by the
+     *         service.<br/>
+     *         The CompletableFuture returned by this method can be completed exceptionally with the following
+     *         exceptions.
+     *         <ul>
+     *         <li>SdkBaseException Base class for all exceptions that can be thrown by the SDK (both service and
+     *         client). Can be used for catch all scenarios.</li>
+     *         <li>SdkClientException If any client side error occurs such as an IO related failure, failure to get
+     *         credentials, etc.</li>
+     *         <li>JsonException Base class for all service exceptions. Unknown exceptions will be thrown as an instance
+     *         of this type.</li>
+     *         </ul>
+     * @sample JsonAsyncClient.PaginatedOperationWithoutResultKey
+     * @see <a href="http://docs.aws.amazon.com/goto/WebAPI/json-service-2010-05-08/PaginatedOperationWithoutResultKey"
+     *      target="_top">AWS API Documentation</a>
+     */
+    default CompletableFuture<PaginatedOperationWithoutResultKeyResponse> paginatedOperationWithoutResultKey(
+        PaginatedOperationWithoutResultKeyRequest paginatedOperationWithoutResultKeyRequest) {
         throw new UnsupportedOperationException();
     }
 
@@ -150,7 +204,7 @@ public interface JsonAsyncClient extends SdkAutoCloseable {
      *      target="_top">AWS API Documentation</a>
      */
     default CompletableFuture<StreamingInputOperationResponse> streamingInputOperation(
-            StreamingInputOperationRequest streamingInputOperationRequest, AsyncRequestProvider requestProvider) {
+        StreamingInputOperationRequest streamingInputOperationRequest, AsyncRequestProvider requestProvider) {
         throw new UnsupportedOperationException();
     }
 
@@ -179,8 +233,8 @@ public interface JsonAsyncClient extends SdkAutoCloseable {
      *      target="_top">AWS API Documentation</a>
      */
     default <ReturnT> CompletableFuture<ReturnT> streamingOutputOperation(
-            StreamingOutputOperationRequest streamingOutputOperationRequest,
-            AsyncResponseHandler<StreamingOutputOperationResponse, ReturnT> asyncResponseHandler) {
+        StreamingOutputOperationRequest streamingOutputOperationRequest,
+        AsyncResponseHandler<StreamingOutputOperationResponse, ReturnT> asyncResponseHandler) {
         throw new UnsupportedOperationException();
     }
 
@@ -235,7 +289,7 @@ public interface JsonAsyncClient extends SdkAutoCloseable {
      *      target="_top">AWS API Documentation</a>
      */
     default CompletableFuture<StreamingInputOperationResponse> streamingInputOperation(
-            StreamingInputOperationRequest streamingInputOperationRequest, Path path) {
+        StreamingInputOperationRequest streamingInputOperationRequest, Path path) {
         return streamingInputOperation(streamingInputOperationRequest, AsyncRequestProvider.fromFile(path));
     }
 
@@ -263,7 +317,7 @@ public interface JsonAsyncClient extends SdkAutoCloseable {
      *      target="_top">AWS API Documentation</a>
      */
     default CompletableFuture<StreamingOutputOperationResponse> streamingOutputOperation(
-            StreamingOutputOperationRequest streamingOutputOperationRequest, Path path) {
+        StreamingOutputOperationRequest streamingOutputOperationRequest, Path path) {
         return streamingOutputOperation(streamingOutputOperationRequest, AsyncResponseHandler.toFile(path));
     }
 }

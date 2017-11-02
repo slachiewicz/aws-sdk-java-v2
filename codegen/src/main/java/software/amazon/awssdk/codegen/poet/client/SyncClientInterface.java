@@ -195,11 +195,11 @@ public final class SyncClientInterface implements ClassSpec {
                 opModel.getInput().getVariableType());
 
         final MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(methodName)
-                .returns(returnType)
-                .addModifiers(Modifier.PUBLIC)
-                .addParameter(requestType, opModel.getInput().getVariableName())
-                .addJavadoc(opModel.getDocs(model, ClientType.SYNC))
-                .addExceptions(getExceptionClasses(model, opModel));
+                                                           .returns(returnType)
+                                                           .addModifiers(Modifier.PUBLIC)
+                                                           .addParameter(requestType, opModel.getInput().getVariableName())
+                                                           .addJavadoc(opModel.getDocs(model, ClientType.SYNC))
+                                                           .addExceptions(getExceptionClasses(model, opModel));
 
         streamingMethod(methodBuilder, opModel, responseType);
 

@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package software.amazon.awssdk.pagination;
+package software.amazon.awssdk.core.pagination;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -24,36 +24,33 @@ import java.util.NoSuchElementException;
  * This class is used to iterate through all the pages of an operation.
  * SDK makes service calls to retrieve the next page when next() method is called.
  *
- * The class holds a reference to the current page that is not sent to the caller. When next() method is called,
- * the current page is returned to the caller and a service call is made to get the next page.
- *
  * @param <ResponseT> The type of a single response page
  */
 public class PaginatedResponsesIterator<ResponseT> implements Iterator<ResponseT> {
 
-    private final NextPageSupplier<ResponseT> nextPageSupplier;
-    private ResponseT currentResponse;
+    private final NextPageFetcher<ResponseT> nextPageFetcher;
 
-    public PaginatedResponsesIterator(ResponseT firstResponse, NextPageSupplier<ResponseT> nextPageSupplier) {
-        this.currentResponse = firstResponse;
-        this.nextPageSupplier = nextPageSupplier;
+    // This is null when the object is created. It gets initialized in next() method
+    // where SDK make service calls.
+    private ResponseT oldResponse;
+
+    public PaginatedResponsesIterator(NextPageFetcher<ResponseT> nextPageFetcher) {
+        this.nextPageFetcher = nextPageFetcher;
     }
 
     @Override
     public boolean hasNext() {
-        return currentResponse != null;
+        return oldResponse == null || nextPageFetcher.hasNextPage(oldResponse);
     }
 
     @Override
     public ResponseT next() {
         if (!hasNext()) {
-            throw new NoSuchElementException();
+            throw new NoSuchElementException("No more pages left");
         }
 
-        ResponseT oldValue = currentResponse;
+        oldResponse = nextPageFetcher.nextPage(oldResponse);
 
-        currentResponse = nextPageSupplier.nextPage(currentResponse);
-
-        return oldValue;
+        return oldResponse;
     }
 }

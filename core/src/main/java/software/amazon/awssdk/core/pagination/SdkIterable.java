@@ -13,24 +13,22 @@
  * permissions and limitations under the License.
  */
 
-package software.amazon.awssdk.pagination;
+package software.amazon.awssdk.core.pagination;
+
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
- * Return type interface for the paginated operations
+ * A custom iterable used in paginated responses.
  *
- * @param <PageT> The type of a single page
- * @param <ItemT> The type of paginated member in a response page
+ * This interface has a default stream() method which creates a stream from
+ * spliterator method.
+ *
+ * @param <T> the type of elements returned by the iterator
  */
-public interface Paginated<PageT, ItemT> extends SdkIterable<PageT> {
+public interface SdkIterable<T> extends Iterable<T> {
 
-    /**
-     * @return the first response page for a paginated operation
-     */
-    PageT firstPage();
-
-    /**
-     * @return A {@link SdkIterable} that is used for iterating over the paginated member
-     * in a response page.
-     */
-    SdkIterable<ItemT> allItems();
+    default Stream<T> stream() {
+        return StreamSupport.stream(spliterator(), false);
+    }
 }

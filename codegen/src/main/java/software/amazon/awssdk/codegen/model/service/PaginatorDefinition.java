@@ -102,4 +102,17 @@ public class PaginatorDefinition {
     public void setLimitKey(String limitKey) {
         this.limitKey = limitKey;
     }
+
+    /**
+     * Returns a boolean value indicating if the information present in this object
+     * is sufficient to generate the paginated APIs.
+     *
+     * @return True if all necessary information to generate paginator APIs is present. Otherwise false.
+     *
+     * TODO Either support fields with Jmespath expressions or add them to invalid list
+     */
+    public boolean isValid() {
+        return inputToken != null && !inputToken.isEmpty() &&
+               outputToken != null && !outputToken.isEmpty();
+    }
 }

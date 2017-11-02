@@ -225,6 +225,6 @@ final class AddOperations {
     }
 
     private boolean isPaginated(Operation op) {
-        return paginators.keySet().contains(op.getName());
+        return paginators.keySet().contains(op.getName()) && paginators.get(op.getName()).isValid();
     }
 }

@@ -82,6 +82,14 @@ class SyncOperationDocProvider extends OperationDocProvider {
     }
 
     @Override
+    protected String getDocsToAppendDescription() {
+        if (opModel.isPaginated()) {
+            return paginationDocs.getDocsForSyncOperation();
+        }
+        return null;
+    }
+
+    @Override
     protected void applyThrows(DocumentationBuilder docBuilder) {
         docBuilder.syncThrows(getThrows());
     }

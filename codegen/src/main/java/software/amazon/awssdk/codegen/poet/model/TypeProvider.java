@@ -39,10 +39,10 @@ import software.amazon.awssdk.codegen.poet.PoetExtensions;
 /**
  * Helper class for resolving Poet {@link TypeName}s for use in model classes.
  */
-class TypeProvider {
+public class TypeProvider {
     private final PoetExtensions poetExtensions;
 
-    TypeProvider(IntermediateModel intermediateModel) {
+    public TypeProvider(IntermediateModel intermediateModel) {
         this.poetExtensions = new PoetExtensions(intermediateModel);
     }
 

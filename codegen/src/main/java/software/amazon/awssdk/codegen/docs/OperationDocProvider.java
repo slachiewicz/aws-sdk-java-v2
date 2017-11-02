@@ -51,10 +51,12 @@ abstract class OperationDocProvider {
 
     protected final IntermediateModel model;
     protected final OperationModel opModel;
+    protected final PaginationDocs paginationDocs;
 
     OperationDocProvider(IntermediateModel model, OperationModel opModel) {
         this.model = model;
         this.opModel = opModel;
+        this.paginationDocs = new PaginationDocs(model, opModel);
     }
 
     /**
@@ -62,11 +64,21 @@ abstract class OperationDocProvider {
      */
     String getDocs() {
         DocumentationBuilder docBuilder = new DocumentationBuilder();
+
+        if (getDocsToPrependDescription() != null) {
+            docBuilder.prependDescription(getDocsToPrependDescription());
+        }
+
         if (StringUtils.isNotBlank(opModel.getDocumentation())) {
             docBuilder.description(opModel.getDocumentation());
         } else {
             docBuilder.description(getDefaultServiceDocs());
         }
+
+        if (getDocsToAppendDescription() != null) {
+            docBuilder.appendDescription(getDocsToAppendDescription());
+        }
+
         applyParams(docBuilder);
         applyReturns(docBuilder);
         applyThrows(docBuilder);
@@ -149,6 +161,20 @@ abstract class OperationDocProvider {
      * Will differ per {@link ClientType}.
      */
     protected abstract String getDefaultServiceDocs();
+
+    /**
+     * @return Additional text that will to be prepended to existing documentation.
+     */
+    protected String getDocsToPrependDescription() {
+        return null;
+    }
+
+    /**
+     * @return Additional text that will to be appended to existing documentation.
+     */
+    protected String getDocsToAppendDescription() {
+        return null;
+    }
 
     /**
      * Add any relevant params to the {@link DocumentationBuilder}. Depends on {@link ClientType} and which overload we are

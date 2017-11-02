@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package software.amazon.awssdk.codegen.poet.model;
+package software.amazon.awssdk.codegen.poet.paginators;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
@@ -23,12 +23,14 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import java.security.InvalidParameterException;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.lang.model.element.Modifier;
+import software.amazon.awssdk.codegen.docs.PaginationDocs;
 import software.amazon.awssdk.codegen.model.intermediate.IntermediateModel;
 import software.amazon.awssdk.codegen.model.intermediate.MemberModel;
 import software.amazon.awssdk.codegen.model.intermediate.OperationModel;
@@ -37,78 +39,23 @@ import software.amazon.awssdk.codegen.model.service.PaginatorDefinition;
 import software.amazon.awssdk.codegen.poet.ClassSpec;
 import software.amazon.awssdk.codegen.poet.PoetExtensions;
 import software.amazon.awssdk.codegen.poet.PoetUtils;
-import software.amazon.awssdk.pagination.NextPageSupplier;
-import software.amazon.awssdk.pagination.Paginated;
-import software.amazon.awssdk.pagination.PaginatedItemsIterable;
-import software.amazon.awssdk.pagination.PaginatedResponsesIterator;
-import software.amazon.awssdk.pagination.SdkIterable;
+import software.amazon.awssdk.codegen.poet.model.TypeProvider;
+import software.amazon.awssdk.core.pagination.NextPageFetcher;
+import software.amazon.awssdk.core.pagination.PaginatedItemsIterable;
+import software.amazon.awssdk.core.pagination.PaginatedResponsesIterator;
+import software.amazon.awssdk.core.pagination.SdkIterable;
 
 /**
  * Java poet {@link ClassSpec} to generate the response class for sync paginated operations.
- *
- * Sample of a generated class with annotations:
-
-    public final class ListTablesPaginator implements Paginated&lt;ListTablesResponse, String> {
-        private final DynamoDBClient client;
-
-        private final ListTablesRequest firstRequest;
-
-        private final ListTablesResponse firstResponsePage;
-
-        private final NextPageSupplier nextPageSupplier;
-
-        public ListTablesPaginator(final DynamoDBClient client, final ListTablesRequest firstRequest,
-            final ListTablesResponse firstResponsePage) {
-            this.client = client;
-            this.firstRequest = firstRequest;
-            this.firstResponsePage = firstResponsePage;
-            this.nextPageSupplier = new ListTablesResponseSupplier();
-        }
-
-        public ListTablesResponse firstPage() {
-            return firstResponsePage;
-        }
-
-        public Iterator&lt;ListTablesResponse> iterator() {
-            return new PaginatedResponsesIterator(firstResponsePage, nextPageSupplier);
-        }
-
-        public SdkIterable&lt;String> tableNames() {
-            Function&lt;ListTablesResponse, Iterator&lt;String>> getPaginatedMemberIterator = response -> response != null
-                            ? response.tableNames().iterator() : null;
-
-            return new PaginatedItemsIterable(this, getPaginatedMemberIterator);
-        }
-
-        @Override
-        public SdkIterable&lt;String> allItems() {
-            return tableNames();
-        }
-
-        private class ListTablesResponseSupplier implements NextPageSupplier&lt;ListTablesResponse> {
-            @Override
-            public ListTablesResponse nextPage(ListTablesResponse currentPage) {
-                if (currentPage == null || currentPage.lastEvaluatedTableName() == null) {
-                    return null;
-                } else {
-                    return client.listTables(firstRequest.toBuilder()
-                                .exclusiveStartTableName(currentPage.lastEvaluatedTableName())
-                                .build());
-                }
-            }
-        }
-    }
  */
 public class PaginatorResponseClassSpec implements ClassSpec {
 
     private static final String CLIENT_MEMBER = "client";
     private static final String REQUEST_MEMBER = "firstRequest";
-    private static final String RESPONSE_MEMBER = "firstResponsePage";
-    private static final String NEXT_PAGE_SUPPLIER_MEMBER = "nextPageSupplier";
-
-    private static final String ALL_ITEMS_METHOD = "allItems";
-    private static final String FIRST_PAGE_METHOD = "firstPage";
+    private static final String NEXT_PAGE_FETCHER_MEMBER = "nextPageFetcher";
+    private static final String HAS_NEXT_PAGE_METHOD = "hasNextPage";
     private static final String NEXT_PAGE_METHOD = "nextPage";
+    private static final String OLD_PAGE_METHOD_ARGUMENT = "oldPage";
 
     private final IntermediateModel model;
     private final PoetExtensions poetExtensions;
@@ -116,6 +63,7 @@ public class PaginatorResponseClassSpec implements ClassSpec {
     private final String c2jOperationName;
     private final PaginatorDefinition paginatorDefinition;
     private final OperationModel operationModel;
+    private final PaginationDocs paginationDocs;
 
     public PaginatorResponseClassSpec(IntermediateModel intermediateModel,
                                       String c2jOperationName,
@@ -127,6 +75,7 @@ public class PaginatorResponseClassSpec implements ClassSpec {
         this.c2jOperationName = c2jOperationName;
         this.paginatorDefinition = paginatorDefinition;
         this.operationModel = model.getOperation(c2jOperationName);
+        this.paginationDocs = new PaginationDocs(intermediateModel, operationModel);
     }
 
     @Override
@@ -134,18 +83,17 @@ public class PaginatorResponseClassSpec implements ClassSpec {
         TypeSpec.Builder specBuilder = TypeSpec.classBuilder(className())
                                                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                                                .addAnnotation(PoetUtils.GENERATED)
-                                               .addSuperinterface(getPaginatedInterface())
+                                               .addSuperinterface(getPaginatedResponseInterface())
                                                .addFields(Stream.of(syncClientInterfaceField(),
                                                                     requestClassField(),
-                                                                    responseClassField(),
                                                                     nextPageSupplierField())
                                                                 .collect(Collectors.toList()))
                                                .addMethod(constructor())
-                                               .addMethod(firstPageMethod())
                                                .addMethod(iteratorMethod())
                                                .addMethods(getMethodSpecsForResultKeyList())
-                                               .addMethod(allItemsMethod())
-                                               .addType(nextPageSupplierClass());
+                                               .addJavadoc(paginationDocs.getDocsForSyncResponseClass(
+                                                   getClientInterfaceName()))
+                                               .addType(nextPageFetcherClass());
 
         return specBuilder.build();
     }
@@ -158,10 +106,8 @@ public class PaginatorResponseClassSpec implements ClassSpec {
     /**
      * Returns the interface that is implemented by the Paginated Response class.
      */
-    private TypeName getPaginatedInterface() {
-        // TODO using first element in the result_key list for now. Needs to add customization to choose the desired one
-        return ParameterizedTypeName.get(ClassName.get(Paginated.class), responseType(),
-                                         getTypeForResultKey(paginatorDefinition.getResultKey().get(0)));
+    private TypeName getPaginatedResponseInterface() {
+        return ParameterizedTypeName.get(ClassName.get(SdkIterable.class), responseType());
     }
 
     /**
@@ -197,16 +143,12 @@ public class PaginatorResponseClassSpec implements ClassSpec {
         return FieldSpec.builder(requestType(), REQUEST_MEMBER, Modifier.PRIVATE, Modifier.FINAL).build();
     }
 
-    private FieldSpec responseClassField() {
-        return FieldSpec.builder(responseType(), RESPONSE_MEMBER, Modifier.PRIVATE, Modifier.FINAL).build();
-    }
-
     private FieldSpec nextPageSupplierField() {
-        return FieldSpec.builder(NextPageSupplier.class, NEXT_PAGE_SUPPLIER_MEMBER, Modifier.PRIVATE, Modifier.FINAL).build();
+        return FieldSpec.builder(NextPageFetcher.class, NEXT_PAGE_FETCHER_MEMBER, Modifier.PRIVATE, Modifier.FINAL).build();
     }
 
-    private String nextPageSupplierClassName() {
-        return operationModel.getReturnType().getReturnType() + "Supplier";
+    private String nextPageFetcherClassName() {
+        return operationModel.getReturnType().getReturnType() + "Fetcher";
     }
 
     private MethodSpec constructor() {
@@ -214,24 +156,9 @@ public class PaginatorResponseClassSpec implements ClassSpec {
                          .addModifiers(Modifier.PUBLIC)
                          .addParameter(getClientInterfaceName(), CLIENT_MEMBER, Modifier.FINAL)
                          .addParameter(requestType(), REQUEST_MEMBER, Modifier.FINAL)
-                         .addParameter(responseType(), RESPONSE_MEMBER, Modifier.FINAL)
                          .addStatement("this.$L = $L", CLIENT_MEMBER, CLIENT_MEMBER)
                          .addStatement("this.$L = $L", REQUEST_MEMBER, REQUEST_MEMBER)
-                         .addStatement("this.$L = $L", RESPONSE_MEMBER, RESPONSE_MEMBER)
-                         .addStatement("this.$L = new $L()", NEXT_PAGE_SUPPLIER_MEMBER, nextPageSupplierClassName())
-                .build();
-    }
-
-    /**
-     * A {@link MethodSpec} for the firstPage() method which returns the
-     * first response page for the paginated operation.
-     */
-    private MethodSpec firstPageMethod() {
-        return MethodSpec.methodBuilder(FIRST_PAGE_METHOD)
-                .addAnnotation(Override.class)
-                .addModifiers(Modifier.PUBLIC)
-                .returns(responseType())
-                .addStatement("return $L", RESPONSE_MEMBER)
+                         .addStatement("this.$L = new $L()", NEXT_PAGE_FETCHER_MEMBER, nextPageFetcherClassName())
                 .build();
     }
 
@@ -244,19 +171,24 @@ public class PaginatorResponseClassSpec implements ClassSpec {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(ParameterizedTypeName.get(ClassName.get(Iterator.class), responseType()))
-                .addStatement("return new $T($L, $L)", PaginatedResponsesIterator.class,
-                        RESPONSE_MEMBER, NEXT_PAGE_SUPPLIER_MEMBER)
+                .addStatement("return new $T($L)", PaginatedResponsesIterator.class, NEXT_PAGE_FETCHER_MEMBER)
                 .build();
     }
 
     /**
      * Returns iterable of {@link MethodSpec} to generate helper methods for all members
      * in {@link PaginatorDefinition#getResultKey()}. All the generated methods return an SdkIterable.
+     *
+     * The helper methods to iterate on paginated member will be generated only
+     * if {@link PaginatorDefinition#getResultKey()} is not null and a non-empty list.
      */
     private Iterable<MethodSpec> getMethodSpecsForResultKeyList() {
-        return paginatorDefinition.getResultKey().stream()
-                                  .map(this::getMethodsSpecForSingleResultKey)
-                                  .collect(Collectors.toList());
+        if (paginatorDefinition.getResultKey() != null) {
+            return paginatorDefinition.getResultKey().stream()
+                                      .map(this::getMethodsSpecForSingleResultKey)
+                                      .collect(Collectors.toList());
+        }
+        return Collections.emptyList();
     }
 
     /*
@@ -286,47 +218,37 @@ public class PaginatorResponseClassSpec implements ClassSpec {
                          .addCode(getPaginatedMemberIteratorLambdaBlock(resultKey, resultKeyModel))
                          .addCode("\n")
                          .addStatement("return new $T(this, getIterator)", PaginatedItemsIterable.class)
+                         .addJavadoc(CodeBlock.builder()
+                                              .add("Returns an iterable to iterate through the paginated {@link $T#$L()} member. "
+                                                   + "The returned iterable is used to iterate through the results across all "
+                                                   + "response pages and not a single page.\n",
+                                                   responseType(), resultKeyModel.getFluentGetterMethodName())
+                                              .add("\n")
+                                              .add("This method is useful if you are interested in iterating over the paginated "
+                                                   + "member in the response pages instead of the top level pages. "
+                                                   + "Similar to iteration over pages, this method internally makes service "
+                                                   + "calls to get the next list of results until the iteration stops or "
+                                                   + "there are no more results.")
+                                              .build())
                          .build();
     }
 
     private CodeBlock getPaginatedMemberIteratorLambdaBlock(String resultKey, MemberModel resultKeyModel) {
-        String fluentGetter = fluentGetterMethodForResponseMember(resultKey);
+        final String response = "response";
+        final String fluentGetter = fluentGetterMethodForResponseMember(resultKey);
 
         CodeBlock iteratorBlock = null;
 
         if (resultKeyModel.isList()) {
-            iteratorBlock = CodeBlock.builder().add("response.$L.iterator()", fluentGetter).build();
+            iteratorBlock = CodeBlock.builder().add("$L.$L.iterator()", response, fluentGetter).build();
 
         } else if (resultKeyModel.isMap()) {
-            iteratorBlock = CodeBlock.builder().add("response.$L.entrySet().iterator()", fluentGetter).build();
+            iteratorBlock = CodeBlock.builder().add("$L.$L.entrySet().iterator()", response, fluentGetter).build();
         }
 
-        return CodeBlock.builder().addStatement("response -> response != null ? $L : null", iteratorBlock).build();
-    }
-
-
-    /**
-     * Returns a {@link MethodSpec} for the overridden #ALL_ITEMS_METHOD method that returns
-     * an iterable for iterating through the paginated member.
-     *
-     * TODO
-     * If there are multiple paginated members in the response, we will add customization to choose one
-     * which is most likely used by customers.
-     *
-     * Other option is to remove the allItems() method.
-     */
-    private MethodSpec allItemsMethod() {
-
-        // TODO using first element in the list for now. Needs to add customization to choose one
-        TypeName mainResultKeyType = getTypeForResultKey(paginatorDefinition.getResultKey().get(0));
-
-        return MethodSpec.methodBuilder(ALL_ITEMS_METHOD)
-                         .addAnnotation(Override.class)
-                         .addModifiers(Modifier.PUBLIC)
-                         .returns(ParameterizedTypeName.get(ClassName.get(SdkIterable.class), mainResultKeyType))
-                         .addStatement("return $L()", memberModelForResponseMember(paginatorDefinition.getResultKey().get(0))
-                             .getFluentGetterMethodName())
-                         .build();
+        return CodeBlock.builder()
+                        .addStatement("$L -> $L != null ? $L : null", response, response, iteratorBlock)
+                        .build();
     }
 
     /**
@@ -446,21 +368,43 @@ public class PaginatorResponseClassSpec implements ClassSpec {
     }
 
     /**
-     * Generates a inner class that implements {@link NextPageSupplier}. An instance of this class
+     * Generates a inner class that implements {@link NextPageFetcher}. An instance of this class
      * is passed to {@link PaginatedResponsesIterator} to be used while iterating through pages.
      */
-    private TypeSpec nextPageSupplierClass() {
-        return TypeSpec.classBuilder(nextPageSupplierClassName())
+    private TypeSpec nextPageFetcherClass() {
+        return TypeSpec.classBuilder(nextPageFetcherClassName())
                        .addModifiers(Modifier.PRIVATE)
-                       .addSuperinterface(ParameterizedTypeName.get(ClassName.get(NextPageSupplier.class), responseType()))
+                       .addSuperinterface(ParameterizedTypeName.get(ClassName.get(NextPageFetcher.class), responseType()))
+                       .addMethod(MethodSpec.methodBuilder(HAS_NEXT_PAGE_METHOD)
+                                            .addModifiers(Modifier.PUBLIC)
+                                            .addAnnotation(Override.class)
+                                            .addParameter(responseType(), OLD_PAGE_METHOD_ARGUMENT)
+                                            .returns(boolean.class)
+                                            .addStatement(hasNextPageMethodBody())
+                                            .build())
                        .addMethod(MethodSpec.methodBuilder(NEXT_PAGE_METHOD)
                                             .addModifiers(Modifier.PUBLIC)
                                             .addAnnotation(Override.class)
-                                            .addParameter(responseType(), "currentPage")
+                                            .addParameter(responseType(), OLD_PAGE_METHOD_ARGUMENT)
                                             .returns(responseType())
                                             .addCode(nextPageMethodBody())
                                             .build())
                        .build();
+    }
+
+    private String hasNextPageMethodBody() {
+        String body;
+
+        if (paginatorDefinition.getMoreResults() != null) {
+            body = String.format("return %s.%s.booleanValue()",
+                                 OLD_PAGE_METHOD_ARGUMENT,
+                                 fluentGetterMethodForResponseMember(paginatorDefinition.getMoreResults()));
+        } else {
+            // If there is no more_results token, then output_token will be a single value
+            body = String.format("return %s.%s != null", OLD_PAGE_METHOD_ARGUMENT, fluentGetterMethodsForOutputToken().get(0));
+        }
+
+        return body;
     }
 
     /*
@@ -468,61 +412,43 @@ public class PaginatorResponseClassSpec implements ClassSpec {
      *
      * A sample from dynamoDB listTables paginator:
      *
-     *  if (response == null || response.lastEvaluatedTableName() == null) {
-     *      return null;
+     *  if (oldPage == null) {
+     *      return client.listTables(firstRequest);
      *  } else {
-     *      return client.listTables(firstRequest.toBuilder()
-     *          .exclusiveStartTableName(response.lastEvaluatedTableName())
-     *          .build());
+     *      return client.listTables(firstRequest.toBuilder().exclusiveStartTableName(response.lastEvaluatedTableName())
+     *                               .build());
      *  }
-     *
      */
     private CodeBlock nextPageMethodBody() {
         return CodeBlock.builder()
-                        .beginControlFlow(conditionForNextResponseNotExists())
-                        .addStatement("return null")
-                        .nextControlFlow("else")
-                        .addStatement(codeToMakeNextServiceCall())
+                        .beginControlFlow("if ($L == null)", OLD_PAGE_METHOD_ARGUMENT)
+                        .addStatement("return $L.$L($L)", CLIENT_MEMBER, operationModel.getMethodName(), REQUEST_MEMBER)
                         .endControlFlow()
+                        .addStatement(codeToGetNextPageIfOldResponseIsNotNull())
                         .build();
     }
 
-    private String conditionForNextResponseNotExists() {
-        String controlFlow;
-
-        if (paginatorDefinition.getMoreResults() != null) {
-            controlFlow = String.format("if (currentPage == null || !currentPage.%s.booleanValue())",
-                                        fluentGetterMethodForResponseMember(paginatorDefinition.getMoreResults()));
-        } else {
-            // If there is no more_results token, then output_token will be a single value
-            controlFlow = String.format("if (currentPage == null || currentPage.%s == null)",
-                                        fluentGetterMethodsForOutputToken().get(0));
-        }
-
-        return controlFlow;
-    }
-
     /**
-     * Generates the code to make next page call by using values from old response.
+     * Generates the code to get next page by using values from old page.
      *
      * Sample generated code:
      * return client.listTables(firstRequest.toBuilder().exclusiveStartTableName(response.lastEvaluatedTableName()).build());
      */
-    private String codeToMakeNextServiceCall() {
+    private String codeToGetNextPageIfOldResponseIsNotNull() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(String.format("return client.%s(%s.toBuilder()", operationModel.getMethodName(), REQUEST_MEMBER));
+        sb.append(String.format("return %s.%s(%s.toBuilder()", CLIENT_MEMBER, operationModel.getMethodName(), REQUEST_MEMBER));
 
         List<String> requestSetterNames = fluentSetterMethodNamesForInputToken();
         List<String> responseGetterMethods = fluentGetterMethodsForOutputToken();
 
         for (int i = 0; i < paginatorDefinition.getInputToken().size(); i++) {
-            sb.append(String.format(".%s(currentPage.%s)", requestSetterNames.get(i), responseGetterMethods.get(i)));
+            sb.append(String.format(".%s(%s.%s)", requestSetterNames.get(i), OLD_PAGE_METHOD_ARGUMENT,
+                                    responseGetterMethods.get(i)));
         }
 
         sb.append(".build())");
 
         return sb.toString();
     }
-
 }

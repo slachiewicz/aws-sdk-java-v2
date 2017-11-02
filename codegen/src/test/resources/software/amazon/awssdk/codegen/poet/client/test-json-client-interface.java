@@ -17,10 +17,16 @@ import software.amazon.awssdk.services.json.model.GetWithoutRequiredMembersReque
 import software.amazon.awssdk.services.json.model.GetWithoutRequiredMembersResponse;
 import software.amazon.awssdk.services.json.model.InvalidInputException;
 import software.amazon.awssdk.services.json.model.JsonException;
+import software.amazon.awssdk.services.json.model.PaginatedOperationWithResultKeyRequest;
+import software.amazon.awssdk.services.json.model.PaginatedOperationWithResultKeyResponse;
+import software.amazon.awssdk.services.json.model.PaginatedOperationWithoutResultKeyRequest;
+import software.amazon.awssdk.services.json.model.PaginatedOperationWithoutResultKeyResponse;
 import software.amazon.awssdk.services.json.model.StreamingInputOperationRequest;
 import software.amazon.awssdk.services.json.model.StreamingInputOperationResponse;
 import software.amazon.awssdk.services.json.model.StreamingOutputOperationRequest;
 import software.amazon.awssdk.services.json.model.StreamingOutputOperationResponse;
+import software.amazon.awssdk.services.json.paginators.PaginatedOperationWithResultKeyPaginator;
+import software.amazon.awssdk.services.json.paginators.PaginatedOperationWithoutResultKeyPaginator;
 import software.amazon.awssdk.utils.SdkAutoCloseable;
 
 /**
@@ -34,8 +40,8 @@ public interface JsonClient extends SdkAutoCloseable {
 
     /**
      * Create a {@link JsonClient} with the region loaded from the
-     * {@link software.amazon.awssdk.core.regions.providers.DefaultAwsRegionProviderChain} and credentials loaded from the
-     * {@link software.amazon.awssdk.core.auth.DefaultCredentialsProvider}.
+     * {@link software.amazon.awssdk.core.regions.providers.DefaultAwsRegionProviderChain} and credentials loaded from
+     * the {@link software.amazon.awssdk.core.auth.DefaultCredentialsProvider}.
      */
     static JsonClient create() {
         return builder().build();
@@ -94,8 +100,8 @@ public interface JsonClient extends SdkAutoCloseable {
      *      target="_top">AWS API Documentation</a>
      */
     default APostOperationWithOutputResponse aPostOperationWithOutput(
-            APostOperationWithOutputRequest aPostOperationWithOutputRequest) throws InvalidInputException, SdkBaseException,
-                                                                                    SdkClientException, JsonException {
+        APostOperationWithOutputRequest aPostOperationWithOutputRequest) throws InvalidInputException, SdkBaseException,
+                                                                                SdkClientException, JsonException {
         throw new UnsupportedOperationException();
     }
 
@@ -145,8 +151,300 @@ public interface JsonClient extends SdkAutoCloseable {
      *      target="_top">AWS API Documentation</a>
      */
     default GetWithoutRequiredMembersResponse getWithoutRequiredMembers(
-            GetWithoutRequiredMembersRequest getWithoutRequiredMembersRequest) throws InvalidInputException, SdkBaseException,
-                                                                                      SdkClientException, JsonException {
+        GetWithoutRequiredMembersRequest getWithoutRequiredMembersRequest) throws InvalidInputException, SdkBaseException,
+                                                                                  SdkClientException, JsonException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Some paginated operation with result_key in paginators.json file
+     * <p>
+     * This is a variant of
+     * {@link #paginatedOperationWithResultKey(software.amazon.awssdk.services.json.model.PaginatedOperationWithResultKeyRequest)}
+     * operation. The return type is a custom iterable that can be used to iterate through all the pages. SDK will
+     * internally handle making service calls for you.
+     * </p>
+     * <p>
+     * When this operation is called, a custom iterable is returned but no service calls are made yet. So there is no
+     * guarantee that the request is valid. As you iterate through the iterable, SDK will start lazily loading response
+     * pages by making service calls until there are no pages left or your iteration stops. If there are errors in your
+     * request, you will see the failures only after you start iterating through the iterable.
+     * </p>
+     *
+     * <p>
+     * The following are few ways to iterate through the response pages:
+     * </p>
+     * 1) Using a Stream
+     *
+     * <pre>
+     * {@code
+     * software.amazon.awssdk.services.json.paginators.PaginatedOperationWithResultKeyPaginator responses = client.paginatedOperationWithResultKeyIterable(request);
+     * responses.stream().forEach(....);
+     * }
+     * </pre>
+     *
+     * 2) Using For loop
+     *
+     * <pre>
+     * {
+     *     &#064;code
+     *     software.amazon.awssdk.services.json.paginators.PaginatedOperationWithResultKeyPaginator responses = client
+     *             .paginatedOperationWithResultKeyIterable(request);
+     *     for (software.amazon.awssdk.services.json.model.PaginatedOperationWithResultKeyResponse response : responses) {
+     *         // do something;
+     *     }
+     * }
+     * </pre>
+     *
+     * 3) Use iterator directly
+     *
+     * <pre>
+     * {@code
+     * software.amazon.awssdk.services.json.paginators.PaginatedOperationWithResultKeyPaginator responses = client.paginatedOperationWithResultKeyIterable(request);
+     * responses.iterator().forEachRemaining(....);
+     * }
+     * </pre>
+     * <p>
+     * <b>Note: If you prefer to have control on service calls, use the
+     * {@link #paginatedOperationWithResultKey(software.amazon.awssdk.services.json.model.PaginatedOperationWithResultKeyRequest)}
+     * operation.</b>
+     * </p>
+     *
+     * @param paginatedOperationWithResultKeyRequest
+     * @return Result of the PaginatedOperationWithResultKey operation returned by the service.
+     * @throws SdkBaseException
+     *         Base class for all exceptions that can be thrown by the SDK (both service and client). Can be used for
+     *         catch all scenarios.
+     * @throws SdkClientException
+     *         If any client side error occurs such as an IO related failure, failure to get credentials, etc.
+     * @throws JsonException
+     *         Base class for all service exceptions. Unknown exceptions will be thrown as an instance of this type.
+     * @sample JsonClient.PaginatedOperationWithResultKey
+     * @see <a href="http://docs.aws.amazon.com/goto/WebAPI/json-service-2010-05-08/PaginatedOperationWithResultKey"
+     *      target="_top">AWS API Documentation</a>
+     */
+    default PaginatedOperationWithResultKeyResponse paginatedOperationWithResultKey(
+        PaginatedOperationWithResultKeyRequest paginatedOperationWithResultKeyRequest) throws SdkBaseException,
+                                                                                              SdkClientException, JsonException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Some paginated operation with result_key in paginators.json file
+     * <p>
+     * This is a variant of
+     * {@link #paginatedOperationWithResultKey(software.amazon.awssdk.services.json.model.PaginatedOperationWithResultKeyRequest)}
+     * operation. The return type is a custom iterable that can be used to iterate through all the pages. SDK will
+     * internally handle making service calls for you.
+     * </p>
+     * <p>
+     * When this operation is called, a custom iterable is returned but no service calls are made yet. So there is no
+     * guarantee that the request is valid. As you iterate through the iterable, SDK will start lazily loading response
+     * pages by making service calls until there are no pages left or your iteration stops. If there are errors in your
+     * request, you will see the failures only after you start iterating through the iterable.
+     * </p>
+     *
+     * <p>
+     * The following are few ways to iterate through the response pages:
+     * </p>
+     * 1) Using a Stream
+     *
+     * <pre>
+     * {@code
+     * software.amazon.awssdk.services.json.paginators.PaginatedOperationWithResultKeyPaginator responses = client.paginatedOperationWithResultKeyIterable(request);
+     * responses.stream().forEach(....);
+     * }
+     * </pre>
+     *
+     * 2) Using For loop
+     *
+     * <pre>
+     * {
+     *     &#064;code
+     *     software.amazon.awssdk.services.json.paginators.PaginatedOperationWithResultKeyPaginator responses = client
+     *             .paginatedOperationWithResultKeyIterable(request);
+     *     for (software.amazon.awssdk.services.json.model.PaginatedOperationWithResultKeyResponse response : responses) {
+     *         // do something;
+     *     }
+     * }
+     * </pre>
+     *
+     * 3) Use iterator directly
+     *
+     * <pre>
+     * {@code
+     * software.amazon.awssdk.services.json.paginators.PaginatedOperationWithResultKeyPaginator responses = client.paginatedOperationWithResultKeyIterable(request);
+     * responses.iterator().forEachRemaining(....);
+     * }
+     * </pre>
+     * <p>
+     * <b>Note: If you prefer to have control on service calls, use the
+     * {@link #paginatedOperationWithResultKey(software.amazon.awssdk.services.json.model.PaginatedOperationWithResultKeyRequest)}
+     * operation.</b>
+     * </p>
+     *
+     * @param paginatedOperationWithResultKeyRequest
+     * @return Result of the PaginatedOperationWithResultKey operation returned by the service.
+     * @throws SdkBaseException
+     *         Base class for all exceptions that can be thrown by the SDK (both service and client). Can be used for
+     *         catch all scenarios.
+     * @throws SdkClientException
+     *         If any client side error occurs such as an IO related failure, failure to get credentials, etc.
+     * @throws JsonException
+     *         Base class for all service exceptions. Unknown exceptions will be thrown as an instance of this type.
+     * @sample JsonClient.PaginatedOperationWithResultKey
+     * @see <a href="http://docs.aws.amazon.com/goto/WebAPI/json-service-2010-05-08/PaginatedOperationWithResultKey"
+     *      target="_top">AWS API Documentation</a>
+     */
+    default PaginatedOperationWithResultKeyPaginator paginatedOperationWithResultKeyIterable(
+        PaginatedOperationWithResultKeyRequest paginatedOperationWithResultKeyRequest) throws SdkBaseException,
+                                                                                              SdkClientException, JsonException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Some paginated operation without result_key in paginators.json file
+     * <p>
+     * This is a variant of
+     * {@link #paginatedOperationWithoutResultKey(software.amazon.awssdk.services.json.model.PaginatedOperationWithoutResultKeyRequest)}
+     * operation. The return type is a custom iterable that can be used to iterate through all the pages. SDK will
+     * internally handle making service calls for you.
+     * </p>
+     * <p>
+     * When this operation is called, a custom iterable is returned but no service calls are made yet. So there is no
+     * guarantee that the request is valid. As you iterate through the iterable, SDK will start lazily loading response
+     * pages by making service calls until there are no pages left or your iteration stops. If there are errors in your
+     * request, you will see the failures only after you start iterating through the iterable.
+     * </p>
+     *
+     * <p>
+     * The following are few ways to iterate through the response pages:
+     * </p>
+     * 1) Using a Stream
+     *
+     * <pre>
+     * {@code
+     * software.amazon.awssdk.services.json.paginators.PaginatedOperationWithoutResultKeyPaginator responses = client.paginatedOperationWithoutResultKeyIterable(request);
+     * responses.stream().forEach(....);
+     * }
+     * </pre>
+     *
+     * 2) Using For loop
+     *
+     * <pre>
+     * {
+     *     &#064;code
+     *     software.amazon.awssdk.services.json.paginators.PaginatedOperationWithoutResultKeyPaginator responses = client
+     *             .paginatedOperationWithoutResultKeyIterable(request);
+     *     for (software.amazon.awssdk.services.json.model.PaginatedOperationWithoutResultKeyResponse response : responses) {
+     *         // do something;
+     *     }
+     * }
+     * </pre>
+     *
+     * 3) Use iterator directly
+     *
+     * <pre>
+     * {@code
+     * software.amazon.awssdk.services.json.paginators.PaginatedOperationWithoutResultKeyPaginator responses = client.paginatedOperationWithoutResultKeyIterable(request);
+     * responses.iterator().forEachRemaining(....);
+     * }
+     * </pre>
+     * <p>
+     * <b>Note: If you prefer to have control on service calls, use the
+     * {@link #paginatedOperationWithoutResultKey(software.amazon.awssdk.services.json.model.PaginatedOperationWithoutResultKeyRequest)}
+     * operation.</b>
+     * </p>
+     *
+     * @param paginatedOperationWithoutResultKeyRequest
+     * @return Result of the PaginatedOperationWithoutResultKey operation returned by the service.
+     * @throws SdkBaseException
+     *         Base class for all exceptions that can be thrown by the SDK (both service and client). Can be used for
+     *         catch all scenarios.
+     * @throws SdkClientException
+     *         If any client side error occurs such as an IO related failure, failure to get credentials, etc.
+     * @throws JsonException
+     *         Base class for all service exceptions. Unknown exceptions will be thrown as an instance of this type.
+     * @sample JsonClient.PaginatedOperationWithoutResultKey
+     * @see <a href="http://docs.aws.amazon.com/goto/WebAPI/json-service-2010-05-08/PaginatedOperationWithoutResultKey"
+     *      target="_top">AWS API Documentation</a>
+     */
+    default PaginatedOperationWithoutResultKeyResponse paginatedOperationWithoutResultKey(
+        PaginatedOperationWithoutResultKeyRequest paginatedOperationWithoutResultKeyRequest) throws SdkBaseException,
+                                                                                                    SdkClientException, JsonException {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Some paginated operation without result_key in paginators.json file
+     * <p>
+     * This is a variant of
+     * {@link #paginatedOperationWithoutResultKey(software.amazon.awssdk.services.json.model.PaginatedOperationWithoutResultKeyRequest)}
+     * operation. The return type is a custom iterable that can be used to iterate through all the pages. SDK will
+     * internally handle making service calls for you.
+     * </p>
+     * <p>
+     * When this operation is called, a custom iterable is returned but no service calls are made yet. So there is no
+     * guarantee that the request is valid. As you iterate through the iterable, SDK will start lazily loading response
+     * pages by making service calls until there are no pages left or your iteration stops. If there are errors in your
+     * request, you will see the failures only after you start iterating through the iterable.
+     * </p>
+     *
+     * <p>
+     * The following are few ways to iterate through the response pages:
+     * </p>
+     * 1) Using a Stream
+     *
+     * <pre>
+     * {@code
+     * software.amazon.awssdk.services.json.paginators.PaginatedOperationWithoutResultKeyPaginator responses = client.paginatedOperationWithoutResultKeyIterable(request);
+     * responses.stream().forEach(....);
+     * }
+     * </pre>
+     *
+     * 2) Using For loop
+     *
+     * <pre>
+     * {
+     *     &#064;code
+     *     software.amazon.awssdk.services.json.paginators.PaginatedOperationWithoutResultKeyPaginator responses = client
+     *             .paginatedOperationWithoutResultKeyIterable(request);
+     *     for (software.amazon.awssdk.services.json.model.PaginatedOperationWithoutResultKeyResponse response : responses) {
+     *         // do something;
+     *     }
+     * }
+     * </pre>
+     *
+     * 3) Use iterator directly
+     *
+     * <pre>
+     * {@code
+     * software.amazon.awssdk.services.json.paginators.PaginatedOperationWithoutResultKeyPaginator responses = client.paginatedOperationWithoutResultKeyIterable(request);
+     * responses.iterator().forEachRemaining(....);
+     * }
+     * </pre>
+     * <p>
+     * <b>Note: If you prefer to have control on service calls, use the
+     * {@link #paginatedOperationWithoutResultKey(software.amazon.awssdk.services.json.model.PaginatedOperationWithoutResultKeyRequest)}
+     * operation.</b>
+     * </p>
+     *
+     * @param paginatedOperationWithoutResultKeyRequest
+     * @return Result of the PaginatedOperationWithoutResultKey operation returned by the service.
+     * @throws SdkBaseException
+     *         Base class for all exceptions that can be thrown by the SDK (both service and client). Can be used for
+     *         catch all scenarios.
+     * @throws SdkClientException
+     *         If any client side error occurs such as an IO related failure, failure to get credentials, etc.
+     * @throws JsonException
+     *         Base class for all service exceptions. Unknown exceptions will be thrown as an instance of this type.
+     * @sample JsonClient.PaginatedOperationWithoutResultKey
+     * @see <a href="http://docs.aws.amazon.com/goto/WebAPI/json-service-2010-05-08/PaginatedOperationWithoutResultKey"
+     *      target="_top">AWS API Documentation</a>
+     */
+    default PaginatedOperationWithoutResultKeyPaginator paginatedOperationWithoutResultKeyIterable(
+        PaginatedOperationWithoutResultKeyRequest paginatedOperationWithoutResultKeyRequest) throws SdkBaseException,
+                                                                                                    SdkClientException, JsonException {
         throw new UnsupportedOperationException();
     }
 
@@ -178,8 +476,8 @@ public interface JsonClient extends SdkAutoCloseable {
      *      target="_top">AWS API Documentation</a>
      */
     default StreamingInputOperationResponse streamingInputOperation(
-            StreamingInputOperationRequest streamingInputOperationRequest, RequestBody requestBody) throws SdkBaseException,
-                                                                                                           SdkClientException, JsonException {
+        StreamingInputOperationRequest streamingInputOperationRequest, RequestBody requestBody) throws SdkBaseException,
+                                                                                                       SdkClientException, JsonException {
         throw new UnsupportedOperationException();
     }
 
@@ -206,8 +504,8 @@ public interface JsonClient extends SdkAutoCloseable {
      *      target="_top">AWS API Documentation</a>
      */
     default StreamingInputOperationResponse streamingInputOperation(
-            StreamingInputOperationRequest streamingInputOperationRequest, Path filePath) throws SdkBaseException,
-                                                                                                 SdkClientException, JsonException {
+        StreamingInputOperationRequest streamingInputOperationRequest, Path filePath) throws SdkBaseException,
+                                                                                             SdkClientException, JsonException {
         return streamingInputOperation(streamingInputOperationRequest, RequestBody.of(filePath));
     }
 
@@ -219,9 +517,9 @@ public interface JsonClient extends SdkAutoCloseable {
      *        Functional interface for processing the streamed response content. The unmarshalled
      *        StreamingInputOperationRequest and an InputStream to the response content are provided as parameters to
      *        the callback. The callback may return a transformed type which will be the return value of this method.
-     *        See {@link software.amazon.awssdk.core.sync.StreamingResponseHandler} for details on implementing
-     *        this interface and for links to pre-canned implementations for common scenarios like downloading to a
-     *        file. The service documentation for the response content is as follows 'This be a stream'.
+     *        See {@link software.amazon.awssdk.core.sync.StreamingResponseHandler} for details on implementing this
+     *        interface and for links to pre-canned implementations for common scenarios like downloading to a file. The
+     *        service documentation for the response content is as follows 'This be a stream'.
      * @return The transformed result of the StreamingResponseHandler.
      * @throws SdkBaseException
      *         Base class for all exceptions that can be thrown by the SDK (both service and client). Can be used for
@@ -236,7 +534,7 @@ public interface JsonClient extends SdkAutoCloseable {
      */
     default <ReturnT> ReturnT streamingOutputOperation(StreamingOutputOperationRequest streamingOutputOperationRequest,
                                                        StreamingResponseHandler<StreamingOutputOperationResponse, ReturnT> streamingResponseHandler)
-            throws SdkBaseException, SdkClientException, JsonException {
+        throws SdkBaseException, SdkClientException, JsonException {
         throw new UnsupportedOperationException();
     }
 
@@ -262,8 +560,8 @@ public interface JsonClient extends SdkAutoCloseable {
      *      target="_top">AWS API Documentation</a>
      */
     default StreamingOutputOperationResponse streamingOutputOperation(
-            StreamingOutputOperationRequest streamingOutputOperationRequest, Path filePath) throws SdkBaseException,
-                                                                                                   SdkClientException, JsonException {
+        StreamingOutputOperationRequest streamingOutputOperationRequest, Path filePath) throws SdkBaseException,
+                                                                                               SdkClientException, JsonException {
         return streamingOutputOperation(streamingOutputOperationRequest, StreamingResponseHandler.toFile(filePath));
     }
 
@@ -290,8 +588,8 @@ public interface JsonClient extends SdkAutoCloseable {
      *      target="_top">AWS API Documentation</a>
      */
     default ResponseInputStream<StreamingOutputOperationResponse> streamingOutputOperation(
-            StreamingOutputOperationRequest streamingOutputOperationRequest) throws SdkBaseException, SdkClientException,
-                                                                                    JsonException {
+        StreamingOutputOperationRequest streamingOutputOperationRequest) throws SdkBaseException, SdkClientException,
+                                                                                JsonException {
         return streamingOutputOperation(streamingOutputOperationRequest, StreamingResponseHandler.toInputStream());
     }
 

@@ -13,7 +13,7 @@
  * permissions and limitations under the License.
  */
 
-package software.amazon.awssdk.pagination;
+package software.amazon.awssdk.core.pagination;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -30,54 +30,51 @@ import software.amazon.awssdk.annotations.SdkProtectedApi;
 @SdkProtectedApi
 public class PaginatedItemsIterable<ResponseT, ItemT> implements SdkIterable<ItemT> {
 
-    private final Paginated paginator;
+    private final SdkIterable<ResponseT> pagesIterable;
     private final Function<ResponseT, Iterator<ItemT>> getItemIterator;
 
-    public PaginatedItemsIterable(Paginated paginator,
+    public PaginatedItemsIterable(SdkIterable<ResponseT> pagesIterable,
                                   Function<ResponseT, Iterator<ItemT>> getItemIterator) {
-        this.paginator = paginator;
+        this.pagesIterable = pagesIterable;
         this.getItemIterator = getItemIterator;
     }
 
     @Override
     public Iterator<ItemT> iterator() {
-        return new ItemIterator(paginator.iterator());
+        return new ItemsIterator(pagesIterable.iterator());
     }
 
-    private class ItemIterator implements Iterator<ItemT> {
+    private class ItemsIterator implements Iterator<ItemT> {
 
-        private final Iterator<ResponseT> responsesIterator;
-        private Iterator<ItemT> itemsIterator;
+        private final Iterator<ResponseT> pagesIterator;
+        private Iterator<ItemT> singlePageItemsIterator;
 
-        ItemIterator(final Iterator<ResponseT> responsesIterator) {
-            this.responsesIterator = responsesIterator;
-            this.itemsIterator = getItemIterator.apply(responsesIterator.next());
+        ItemsIterator(final Iterator<ResponseT> pagesIterator) {
+            this.pagesIterator = pagesIterator;
+            this.singlePageItemsIterator = getItemIterator.apply(pagesIterator.next());
         }
 
         @Override
         public boolean hasNext() {
-            return (itemsIterator != null && itemsIterator.hasNext()) ||
-                    responsesIterator.hasNext();
+            while ((singlePageItemsIterator == null || !singlePageItemsIterator.hasNext())
+                   && pagesIterator.hasNext()) {
+                singlePageItemsIterator = getItemIterator.apply(pagesIterator.next());
+            }
+
+            if (singlePageItemsIterator != null && singlePageItemsIterator.hasNext()) {
+                return true;
+            }
+
+            return false;
         }
 
         @Override
         public ItemT next() {
             if (!hasNext()) {
-                throw new NoSuchElementException();
+                throw new NoSuchElementException("No more elements left");
             }
 
-            // Using while loop here to handle response pages with empty collection of items
-            while (!itemsIterator.hasNext() && responsesIterator.hasNext()) {
-                itemsIterator = getItemIterator.apply(responsesIterator.next());
-            }
-
-
-            if (!itemsIterator.hasNext()) {
-                // TODO throw error or return null
-                return null;
-            }
-
-            return itemsIterator.next();
+            return singlePageItemsIterator.next();
         }
     }
 

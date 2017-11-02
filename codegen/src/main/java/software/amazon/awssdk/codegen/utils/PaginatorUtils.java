@@ -15,7 +15,10 @@
 
 package software.amazon.awssdk.codegen.utils;
 
-public class PaginatorUtils {
+public final class PaginatorUtils {
+
+    private PaginatorUtils() {
+    }
 
     /**
      * @param methodName Name of a method in sync client

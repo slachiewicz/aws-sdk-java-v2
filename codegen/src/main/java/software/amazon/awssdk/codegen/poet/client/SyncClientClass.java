@@ -153,11 +153,7 @@ public class SyncClientClass implements ClassSpec {
                                                                      PaginatorUtils.getSyncMethodName(opModel.getMethodName()))
                     .addAnnotation(Override.class)
                     .returns(poetExtensions.getResponseClassForPaginatedSyncOperation(opModel.getOperationName()))
-                    .addCode("\n")
-                    .addStatement("$T firstPage = $L($L)", returnType, opModel.getMethodName(),
-                                  opModel.getInput().getVariableName())
-                    .addCode("\n")
-                    .addStatement("return new $T(this, $L, firstPage)",
+                    .addStatement("return new $T(this, $L)",
                             poetExtensions.getResponseClassForPaginatedSyncOperation(opModel.getOperationName()),
                             opModel.getInput().getVariableName())
                     .build());

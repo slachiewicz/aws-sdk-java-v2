@@ -26,15 +26,15 @@ import software.amazon.awssdk.codegen.emitters.GeneratorTaskParams;
 import software.amazon.awssdk.codegen.emitters.PoetGeneratorTask;
 import software.amazon.awssdk.codegen.model.service.PaginatorDefinition;
 import software.amazon.awssdk.codegen.poet.ClassSpec;
-import software.amazon.awssdk.codegen.poet.model.PaginatorResponseClassSpec;
+import software.amazon.awssdk.codegen.poet.paginators.PaginatorResponseClassSpec;
 
 public class PaginatorsGeneratorTasks extends BaseGeneratorTasks {
 
-    private final String modelClassDir;
+    private final String paginatorsClassDir;
 
     public PaginatorsGeneratorTasks(GeneratorTaskParams dependencies) {
         super(dependencies);
-        this.modelClassDir = dependencies.getPathProvider().getModelDirectory();
+        this.paginatorsClassDir = dependencies.getPathProvider().getPaginatorsDirectory();
     }
 
     @Override
@@ -46,13 +46,14 @@ public class PaginatorsGeneratorTasks extends BaseGeneratorTasks {
     protected List<GeneratorTask> createTasks() throws Exception {
         info("Emitting paginator classes");
         return model.getPaginators().entrySet().stream()
-                .map(safeFunction(this::createTask))
-                .collect(Collectors.toList());
+                    .filter(entry -> entry.getValue().isValid())
+                    .map(safeFunction(this::createTask))
+                    .collect(Collectors.toList());
     }
 
     private GeneratorTask createTask(Map.Entry<String, PaginatorDefinition> entry) throws IOException {
         ClassSpec classSpec = new PaginatorResponseClassSpec(model, entry.getKey(), entry.getValue());
 
-        return new PoetGeneratorTask(modelClassDir, model.getFileHeader(), classSpec);
+        return new PoetGeneratorTask(paginatorsClassDir, model.getFileHeader(), classSpec);
     }
 }
