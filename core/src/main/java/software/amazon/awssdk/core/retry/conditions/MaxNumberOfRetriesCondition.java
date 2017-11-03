@@ -13,19 +13,23 @@
  * permissions and limitations under the License.
  */
 
-package software.amazon.awssdk.core.retry.v2;
+package software.amazon.awssdk.core.retry.conditions;
 
-import static software.amazon.awssdk.core.util.ValidationUtils.assertIsPositive;
+import static software.amazon.awssdk.utils.NumericUtils.assertIsNotNegative;
+
+import software.amazon.awssdk.annotations.SdkPublicApi;
+import software.amazon.awssdk.core.retry.RetryPolicyContext;
 
 /**
  * Simple retry condition that allows retries up to a certain max number of retries.
  */
+@SdkPublicApi
 public class MaxNumberOfRetriesCondition implements RetryCondition {
 
     private final int maxNumberOfRetries;
 
     public MaxNumberOfRetriesCondition(int maxNumberOfRetries) {
-        this.maxNumberOfRetries = assertIsPositive(maxNumberOfRetries, "maxNumberOfRetries");
+        this.maxNumberOfRetries = assertIsNotNegative(maxNumberOfRetries, "maxNumberOfRetries");
     }
 
     @Override

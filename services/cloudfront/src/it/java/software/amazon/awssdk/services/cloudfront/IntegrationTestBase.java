@@ -110,7 +110,6 @@ public abstract class IntegrationTestBase extends AwsTestBase {
                 break;
             }
         }
-        ;
 
         s3.deleteBucket(DeleteBucketRequest.builder().bucket(bucketName).build());
     }
